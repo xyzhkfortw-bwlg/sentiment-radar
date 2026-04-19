@@ -10,7 +10,7 @@ TELEGRAM_CHAT_ID = os.getenv("TG_CHAT_ID")
 
 
 def send_telegram_msg(message):
-        url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {"chat_id": TELEGRAM_CHAT_ID, "text": message, "parse_mode": "Markdown"}
     requests.post(url, json=payload)
 
