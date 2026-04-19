@@ -1,0 +1,42 @@
+name: Market Sentiment Radar
+
+on:
+  schedule:
+    - cron: '0 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-radar:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Sentiment Radar
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: python radar_script.py
+
+      - name: Backup data to GitHub Repo
+        run: |
+          git config --global user.name "Sentiment Radar Bot"
+          git config --global user.email "action@github.com"
+          git add data/*.json || true
+          git diff --cached --quiet || git commit -m "Auto-backup sentiment data: $(date +'%Y-%m-%d %H:%M UTC')"
+          git push || true
