@@ -83,38 +83,47 @@ def get_vix_index():
 
 def get_twse_chips():
     """3. 籌碼面情緒：三大法人與融資比 (以 2330 台積電為例)"""
-    try:
-        # 呼叫證交所 API 取得三大法人買賣超
-        date_str = datetime.now().strftime("%Y%m%d")
-        url = f"https://www.twse.com.tw/rwd/zh/fund/T86?response=json&date={date_str}&selectType=ALLBUT0999"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        resp = requests.get(url, headers=headers, timeout=10)
-        data = resp.json()
+    from datetime import timedelta
+    headers = {"User-Agent": "Mozilla/5.0"}
 
-        tsmc_row = None
-        if data.get("data"):
+    # 往前最多查 5 個日曆日，找到有資料的最近交易日
+    for days_back in range(0, 6):
+        check_date = datetime.now() - timedelta(days=days_back)
+        date_str = check_date.strftime("%Y%m%d")
+        try:
+            url = f"https://www.twse.com.tw/rwd/zh/fund/T86?response=json&date={date_str}&selectType=ALLBUT0999"
+            resp = requests.get(url, headers=headers, timeout=10)
+            data = resp.json()
+
+            if not data.get("data"):
+                print(f"⚠️ {date_str} 無籌碼資料，往前找...")
+                continue
+
+            tsmc_row = None
             for row in data["data"]:
                 if "2330" in row[0]:
                     tsmc_row = row
                     break
 
-        if tsmc_row:
-            foreign_net = tsmc_row[4].replace(",", "")  # 外資買賣超
-            trust_net = tsmc_row[7].replace(",", "")    # 投信買賣超
-            dealer_net = tsmc_row[10].replace(",", "")  # 自營商買賣超
-            total_net = tsmc_row[11].replace(",", "")   # 三大法人合計
+            if tsmc_row:
+                foreign_net = tsmc_row[4].replace(",", "")  # 外資買賣超
+                trust_net = tsmc_row[7].replace(",", "")    # 投信買賣超
+                dealer_net = tsmc_row[10].replace(",", "")  # 自營商買賣超
+                total_net = tsmc_row[11].replace(",", "")   # 三大法人合計
+                label = check_date.strftime("%m/%d")
+                print(f"✅ 找到籌碼資料：{date_str}")
+                return {
+                    "Target": f"2330 台積電 ({label})",
+                    "Foreign_Net": f"{int(foreign_net):+,} 張",
+                    "Trust_Net": f"{int(trust_net):+,} 張",
+                    "Dealer_Net": f"{int(dealer_net):+,} 張",
+                    "Total_Net": f"{int(total_net):+,} 張",
+                }
+        except Exception as e:
+            print(f"⚠️ 籌碼資料抓取失敗 ({date_str}): {e}")
+            continue
 
-            return {
-                "Target": "2330 台積電",
-                "Foreign_Net": f"{int(foreign_net):+,} 張",
-                "Trust_Net": f"{int(trust_net):+,} 張",
-                "Dealer_Net": f"{int(dealer_net):+,} 張",
-                "Total_Net": f"{int(total_net):+,} 張",
-            }
-    except Exception as e:
-        print(f"⚠️ 籌碼資料抓取失敗: {e}")
-
-    # 資料抓取失敗時回傳預設值
+    # 全部失敗時回傳預設值
     return {
         "Target": "2330 台積電",
         "Foreign_Net": "N/A",
