@@ -1,0 +1,27 @@
+{
+    "timestamp": "2026-06-19T23:01:43.292235",
+    "us_market": {
+        "TSM_ADR_Price": 462.12,
+        "TSM_ADR_Change": "+6.94%",
+        "SOXX_Price": 639.45,
+        "SOXX_Change": "+6.62%"
+    },
+    "vix": {
+        "VIX": 16.78,
+        "VIX_Signal": "😐 正常波動"
+    },
+    "chips": {
+        "Target": "2330 台積電 (06/18)",
+        "Foreign_Net": "+7,515,895 張",
+        "Trust_Net": "+0 張",
+        "Dealer_Net": "-7,268,349 張",
+        "Total_Net": "+36,915 張"
+    },
+    "etf": {
+        "ETF_0050_Premium": "N/A"
+    },
+    "sentiment": {
+        "Score": 70,
+        "Signal": "🟢 偏多頭，情緒樂觀"
+    }
+}
